@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow,QLineEdit, QWidget,QLabel, QPushButton,QHBoxLayout,QVBoxLayout,QSizePolicy
+from PyQt6.QtWidgets import QApplication, QMainWindow,QLineEdit, QWidget,QLabel, QPushButton,QHBoxLayout,QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIntValidator
 
@@ -9,6 +9,7 @@ class HomePage(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,**kwargs)
         self.layout = QVBoxLayout(self)
+        self.setObjectName("page")
 
         self.filterState = "all"
 
@@ -67,12 +68,73 @@ class HomePage(QWidget):
         self.actionWidgetLayout.addWidget(self.addButton,alignment=Qt.AlignmentFlag.AlignRight)
 
 
+        self.dataTable = QTableWidget()
+        self.dataTable.setShowGrid(False)
+        self.dataTable.setAlternatingRowColors(False)
+        self.dataTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.dataTable.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
+        self.dataTable.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.dataTable.verticalHeader().setVisible(False)
+        self.dataTable.setColumnCount(4)
+        self.dataTable.setHorizontalHeaderLabels(["#","Name","Status","Actions"])
+        header = self.dataTable.horizontalHeader()
+        header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.layout.addWidget(self.dataTable)
+
+        self.dataTable.setStyleSheet("""
+            QTableWidget {
+                background-color: #000212;
+                color: #D3F2FF;
+                gridline-color: #444;
+                font-size: 14px;
+                border-radius:15px;
+            }
+            QTableWidget::item{
+                height:60px;
+                margin-bottom:5px;
+                border-radius:0px;
+                border: 1px solid #496297;
+                background-color:#0B152A;
+                border-left: none;
+                border-right: none;
+                font-size:24px;
+            }
+            QTableWidget::item:first {
+                border-left: 1px solid #496297;
+                border-top-left-radius: 15px;
+                border-bottom-left-radius: 15px;
+            }
+            QTableWidget::item:last {
+                border-right: 1px solid #496297;
+                border-top-right-radius: 15px;
+                border-bottom-right-radius: 15px;
+            }
+            QHeaderView::section{
+                background-color: #000212;
+                color: #D3F2FF;
+                padding: 6px;
+                font-size:24px;
+                font-weight: bold;
+                border-radius:15px;
+            }
+            QHeaderView{
+                background-color: #000212;
+                border-radius:15px;
+                border: 1px solid #496297;
+                margin-bottom:5px;
+            }
+        """)
+        
         self.setStyleSheet("""
         QWidget#actionBar{
             background-color: #000212;
             border-radius: 15px;
             border: 1px solid #496297;
             padding: 0px
+        }
+        #page{
+            background-color:#030A1E;
         }
         #searchWidget{
             margin:0px;
@@ -113,7 +175,18 @@ class HomePage(QWidget):
         QPushButton:hover{background-color:#0B152A;}
         """)
         self.upadteFilters()
-    
+        self.addItem(0)
+        self.addItem(1)
+        self.addItem(2)
+        self.addItem(3)
+        self.addItem(4)
+        self.addItem(5)
+        self.addItem(6)
+
+
+
+
+
     def inButtonClick(self):
         if self.filterState in ["all","out"]:self.filterState = "in"
         else: self.filterState="all"
@@ -122,6 +195,15 @@ class HomePage(QWidget):
         if self.filterState in ["all","in"]:self.filterState = "out"
         else: self.filterState="all"
         self.upadteFilters()
+
+    def addItem(self,row):
+        self.dataTable.insertRow(row)
+        self.dataTable.setItem(row, 0, QTableWidgetItem(f"{row}"))
+        self.dataTable.setItem(row, 1, QTableWidgetItem("Lenovo PUNOSZ"))
+        self.dataTable.setItem(row, 2, QTableWidgetItem("Lent to Zétény Botyánszki on 2025.12.01"))
+
+        for row in range(self.dataTable.rowCount()):
+            self.dataTable.setRowHeight(row, 50)  # increase height for padding feel
 
     def upadteFilters(self):
         if self.filterState == "all":
