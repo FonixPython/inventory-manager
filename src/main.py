@@ -3,7 +3,7 @@ import sys
 
 # file imports
 from connectionPage import ConnectionPage
-
+from homePage import HomePage
 
 
 class MainWindow(QMainWindow):
@@ -30,7 +30,11 @@ class MainWindow(QMainWindow):
         self.connectionPage = ConnectionPage()
         self.multipage.addWidget(self.connectionPage)
         
-        self.multipage.setCurrentIndex(0)
+        # Page 2
+        self.homePage = HomePage()
+        self.multipage.addWidget(self.homePage)
+
+        self.multipage.setCurrentIndex(1)
 
 
 
