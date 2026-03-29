@@ -2,6 +2,8 @@ from PyQt6.QtWidgets import QApplication, QMainWindow,QLineEdit, QWidget,QLabel,
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIntValidator
 
+from db import check_mysql_connection
+
 import os
 import json
 
@@ -13,7 +15,9 @@ class ConnectionPage(QWidget):
         self.login_box = QWidget()
         self.login_box.setFixedSize(500,600)
         self.login_box.setObjectName("login_box")
-        self.layout.addWidget(self.login_box, alignment=Qt.AlignmentFlag.AlignCenter)
+        self.layout.addStretch() 
+        self.layout.addWidget(self.login_box, alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.layout.addStretch() 
         self.box_layout = QVBoxLayout(self.login_box)
         self.box_layout.setSpacing(5)
         self.box_layout.setContentsMargins(0,0,0,0)
@@ -21,6 +25,7 @@ class ConnectionPage(QWidget):
         self.titleLabel = QLabel("Connect to a server")
         self.titleLabel.setObjectName("titleLabel")
         self.box_layout.addWidget(self.titleLabel,alignment= Qt.AlignmentFlag.AlignHCenter)
+        
 
         self.hostWidget = QWidget()
         self.hostWidget.setObjectName("hostWidget")
@@ -80,12 +85,24 @@ class ConnectionPage(QWidget):
         self.tableEntry.setPlaceholderText("table")
         self.tableEntry.setText("inventory")
         self.databaseWidgetLayout.addWidget(self.tableEntry)
-
-
-
+        
+        self.messageLabel = QLabel("")
+        self.messageLabel.setVisible(False)
+        self.messageLabel.setWordWrap(True)
+        self.messageLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.layout.addWidget(self.messageLabel,alignment=Qt.AlignmentFlag.AlignBottom)
 
         self.connectButton = QPushButton(text="Connect")
+        self.connectButton.clicked.connect(self.connect)
         self.box_layout.addWidget(self.connectButton,alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignHCenter)
+
+        self.addressEntry.textChanged.connect(self.check_input)
+        self.portEntry.textChanged.connect(self.check_input)
+        self.userEntry.textChanged.connect(self.check_input)
+        self.passwordEntry.textChanged.connect(self.check_input)
+        self.databaseEntry.textChanged.connect(self.check_input)
+        self.tableEntry.textChanged.connect(self.check_input)
+
 
         self.setStyleSheet("""
         QWidget#login_box{
@@ -135,8 +152,8 @@ class ConnectionPage(QWidget):
             font-size:24px;
             
         }
-        QPushButton:pressed{
-            background-color:#496297;
+        QPushButton:disabled{
+            background-color:#a6b8dc;
         }
         QPushButton:hover{
             background-color:#0B152A;
@@ -154,3 +171,25 @@ class ConnectionPage(QWidget):
             self.passwordEntry.setText(data.get("password",""))
             self.databaseEntry.setText(data.get("database",""))
             self.tableEntry.setText(data.get("table","inventory"))
+
+    def check_input(self):self.connectButton.setEnabled(bool(self.addressEntry.text()) and bool(self.portEntry.text()) and bool(self.userEntry.text()) and bool(self.passwordEntry.text()) and bool(self.tableEntry.text()) and bool(self.databaseEntry.text()))
+    def connect(self):
+        result = check_mysql_connection(host=self.addressEntry.text(),
+                                        port=self.portEntry.text(),
+                                        user=self.userEntry.text(),
+                                        password=self.passwordEntry.text(),
+                                        database=self.databaseEntry.text()
+                                        )
+        self.messageLabel.setText(str(result))
+        self.messageLabel.setVisible(True)
+        if result == "Success":
+            with open("./creds.json","w") as f:
+                data = {
+                    "address":self.addressEntry.text(),
+                    "port":self.portEntry.text(),
+                    "user":self.userEntry.text(),
+                    "password":self.passwordEntry.text(),
+                    "database":self.databaseEntry.text(),
+                    "table":self.tableEntry.text(),
+                }
+                json.dump(data, f, indent=4)

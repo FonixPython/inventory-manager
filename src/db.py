@@ -1,4 +1,6 @@
 import mysql.connector
+from mysql.connector import Error
+import re
 class Database():
     def __init__(self,db_host:string,db_user:string,db_password:string,db:string,table:string="inventory"):
         self.conn = mysql.connector.connect(
@@ -21,55 +23,43 @@ class Database():
 
 
 
+def parse_grants(grants):
+    permissions = {}
+    grant_regex = re.compile(r"GRANT (.+?) ON (.+?) TO",re.IGNORECASE)
+    for grant in grants:
+        match = grant_regex.search(grant)
+        if not match:continue
+        perms_part, scope = match.groups()
+        scope = scope.replace("`", "").strip()
+        perms = {p.strip().upper() for p in perms_part.split(",")}
+        if "ALL PRIVILEGES" in perms:perms = {"ALL"}
+        if scope not in permissions:permissions[scope] = set()
+        permissions[scope].update(perms)
+    return permissions
 
-
-import mysql.connector
-from mysql.connector import Error
-
-def check_mysql_connection(host, user, password, database, table):
+def check_mysql_connection(host, user, password, database, port):
     try:
-        # Connect to MySQL server
         connection = mysql.connector.connect(
             host=host,
+            port=port,
             user=user,
             password=password,
-            database=database 
+            database=database,
         )
         
         if connection.is_connected():
             print(f"Successfully connected to MySQL server at {host}")
-            
             cursor = connection.cursor()
-            
-            # Check if database exists (optional)
             cursor.execute("SHOW DATABASES")
             databases = [db[0] for db in cursor.fetchall()]
             if database not in databases:
-                print(f"Database '{database}' does not exist.")
-                return False
-            
-            # Check if table exists
-            cursor.execute(f"SHOW TABLES LIKE '{table}'")
-            result = cursor.fetchone()
-            if result:
-                print(f"Table '{table}' exists and is accessible.")
-                return True
-            else:
-                print(f"Table '{table}' does not exist or access denied.")
-                return False
+                return Error("Database doesn't exist!")
+            cursor.execute("SHOW GRANTS FOR CURRENT_USER")
+            parsed = parse_grants([row[0] for row in cursor.fetchall()])
+            if not "ALL" in parsed[f"{database}.*"]:
+                return PermissionError("User needs to have all permissions to the database!")
+            return "Success"
 
-    except Error as e:
-        print(f"Error: {e}")
-        return False
+    except mysql.connector.Error as err:return err
     finally:
-        if 'connection' in locals() and connection.is_connected():
-            connection.close()
-
-# Example usage
-check_mysql_connection(
-    host="localhost",
-    user="your_username",
-    password="your_password",
-    database="your_database",
-    table="your_table"
-)
+        if 'connection' in locals() and connection.is_connected():connection.close()

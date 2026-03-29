@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QSt
 import sys
 
 # file imports
-from pages import *
+from connectionPage import ConnectionPage
 
 
 
