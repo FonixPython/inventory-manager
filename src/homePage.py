@@ -3,8 +3,8 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow,QLineEdit,
                              QVBoxLayout, QTableWidget, QTableWidgetItem,
                               QHeaderView, QAbstractItemView, QDialog,
                               QDialogButtonBox, QInputDialog)
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIntValidator, QFont
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QIntValidator, QFont, QIcon
 
 from db import Database,check_mysql_connection
 import os
@@ -13,8 +13,9 @@ import datetime
 
 
 class HomePage(QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,logoutFunction, *args, **kwargs):
         super().__init__(*args,**kwargs)
+        self.logoutFunction = logoutFunction
         self.layout = QVBoxLayout(self)
         self.setObjectName("page")
         self.connectToSaved()
@@ -39,6 +40,14 @@ class HomePage(QWidget):
         self.searchEntry.setPlaceholderText("Search inventory")
         self.searchWidgetLayout.addWidget(self.searchEntry,alignment=Qt.AlignmentFlag.AlignHCenter)
         self.searchEntry.textChanged.connect(self.refresh_display)
+
+        self.searchWidgetLayout.addStretch()
+
+        self.logoutButton = QPushButton(icon=QIcon("assets/logout.png"))
+        self.logoutButton.clicked.connect(self.logOutAction)
+        self.logoutButton.setIconSize(QSize(35,35))
+        self.logoutButton.setObjectName("logoutButton")
+        self.searchWidgetLayout.addWidget(self.logoutButton, alignment=Qt.AlignmentFlag.AlignRight)
 
 
         # Second row
@@ -196,6 +205,14 @@ class HomePage(QWidget):
             color:#D3F2FF;
             font-size:24px;
         }
+        #logoutButton{
+            width:40px;
+            height:40px;
+            background-color:#0B152A;
+        }
+        #logoutButton:hover{
+            background-color:#030A1E;
+        }
         QScrollBar:vertical {
             background: transparent;
             width: 10px;
@@ -265,6 +282,8 @@ class HomePage(QWidget):
         self.addEntry.clear()
 
     def refresh_display(self):
+        if self.database == None:
+            self.connectToSaved()
         results = self.database.get_items(search_query=None if self.searchEntry.text() == "" else self.searchEntry.text(),filter=None if self.filterState == "all" else self.filterState.upper())
         self.dataTable.setRowCount(0)
         for i in results:
@@ -309,7 +328,8 @@ class HomePage(QWidget):
 
         itemWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
         
-        editButton = QPushButton("E")
+        editButton = QPushButton(icon=QIcon("assets/edit.png"))
+        editButton.setIconSize(QSize(35,35))
         editButton.clicked.connect(lambda:self.editAction(id,name))
         editButton.setStyleSheet("""
             QPushButton{
@@ -320,7 +340,8 @@ class HomePage(QWidget):
         """)
         itemWidgetLayout.addWidget(editButton,alignment=Qt.AlignmentFlag.AlignRight)
         
-        deleteButton = QPushButton("X")
+        deleteButton = QPushButton(icon=QIcon("assets/delete.png"))
+        deleteButton.setIconSize(QSize(35,35))
         deleteButton.clicked.connect(lambda:self.deleteAction(id))
         deleteButton.setStyleSheet("""
             QPushButton{
@@ -430,6 +451,12 @@ class HomePage(QWidget):
         dialog = LendDialog(dbId,self.database)
         if dialog.exec():
             self.refresh_display()
+
+    def logOutAction(self):
+        if self.database:
+            self.database.conn.close()
+            self.database = None
+        self.logoutFunction()
 
 class ConfirmationDialog(QDialog):
     def __init__(self):

@@ -33,11 +33,16 @@ class MainWindow(QMainWindow):
         self.multipage.setCurrentIndex(0)
 
     def goToApp(self):
-        # Page 2
-        self.homePage = HomePage()
+        self.homePage = None
+        self.homePage = HomePage(self.logOut)
         self.multipage.addWidget(self.homePage)
         self.multipage.setCurrentIndex(1)
+        self.homePage.connectToSaved()
+        self.homePage.refresh_display()
 
+    def logOut(self):
+        self.homePage = None
+        self.multipage.setCurrentIndex(0)
 
 
 if __name__ == "__main__":
