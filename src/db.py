@@ -2,25 +2,44 @@ import mysql.connector
 from mysql.connector import Error
 import re
 class Database():
-    def __init__(self,db_host:string,db_user:string,db_password:string,db:string,table:string="inventory"):
+    def __init__(self,db_host:string,db_port:int,db_user:string,db_password:string,db:string,table:string="inventory"):
         self.conn = mysql.connector.connect(
             host=db_host,
+            port=db_port,
             user=db_user,
             password=db_password,
-            datasabe=db
+            database=db,
         )
         self.table = table
         self.cursor = self.conn.cursor()
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS ? (
+        self.cursor.execute(f"""CREATE TABLE IF NOT EXISTS {table}(
             id INT AUTO_INCREMENT PRIMARY KEY,
             name TEXT NOT NULL,
             who TEXT,
             date DATETIME DEFAULT CURRENT_TIMESTAMP,
-            here BOOLEAN DEFAULT TRUE
-        );""", (table))
+            here BOOLEAN DEFAULT TRUE);
+            """)
     
-    def add_item(name:string):self.cursor.execute("INSERT INTO ? (name) VALUES (?)",(self.table,name))
-
+    def add_item(self,name:string):
+        self.cursor.execute(f"INSERT INTO {self.table} (name) VALUES (%s)",[name,])
+        self.conn.commit()
+    def delete_item(self,id):
+        self.cursor.execute(f"DELETE FROM {self.table} WHERE id = %s",[id,])
+        self.conn.commit()
+    def get_items(self, search_query: str | None = None, filter: str | None = None):
+        sql_statement = f"SELECT * FROM `{self.table}`"
+        conditions = []
+        params = []
+        if filter == "IN":conditions.append("here = TRUE")
+        elif filter == "OUT":conditions.append("here = FALSE")
+        if search_query:
+            conditions.append("name LIKE %s OR who LIKE %s")
+            params.append(f"%{search_query}%")
+            params.append(f"%{search_query}%")
+        if conditions:
+            sql_statement += " WHERE " + " AND ".join(conditions)
+        self.cursor.execute(sql_statement, tuple(params))
+        return self.cursor.fetchall()
 
 
 def parse_grants(grants):

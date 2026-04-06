@@ -1,8 +1,15 @@
-from PyQt6.QtWidgets import QApplication, QMainWindow,QLineEdit, QWidget,QLabel, QPushButton,QHBoxLayout,QVBoxLayout, QTableWidget, QTableWidgetItem, QHeaderView, QAbstractItemView
+from PyQt6.QtWidgets import (QApplication, QMainWindow,QLineEdit,
+                             QWidget,QLabel, QPushButton,QHBoxLayout,
+                             QVBoxLayout, QTableWidget, QTableWidgetItem,
+                              QHeaderView, QAbstractItemView, QDialog,
+                              QDialogButtonBox, QInputDialog)
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QIntValidator
+from PyQt6.QtGui import QIntValidator, QFont
 
-from db import Database
+from db import Database,check_mysql_connection
+import os
+import json
+import datetime
 
 
 class HomePage(QWidget):
@@ -10,8 +17,10 @@ class HomePage(QWidget):
         super().__init__(*args,**kwargs)
         self.layout = QVBoxLayout(self)
         self.setObjectName("page")
-
+        self.connectToSaved()
         self.filterState = "all"
+        self.addState = False
+
 
         self.actionBar = QWidget()
         self.actionBar.setObjectName("actionBar")
@@ -29,11 +38,8 @@ class HomePage(QWidget):
         self.searchEntry = QLineEdit()
         self.searchEntry.setObjectName("searchEntry")
         self.searchEntry.setPlaceholderText("Search inventory")
-        self.searchWidgetLayout.addWidget(self.searchEntry)
-
-        self.searchButton = QPushButton("Search")
-        self.searchButton.setObjectName("searchButton")
-        self.searchWidgetLayout.addWidget(self.searchButton)
+        self.searchWidgetLayout.addWidget(self.searchEntry,alignment=Qt.AlignmentFlag.AlignHCenter)
+        self.searchEntry.textChanged.connect(self.refresh_display)
 
 
         # Second row
@@ -66,6 +72,16 @@ class HomePage(QWidget):
         self.addButton.setContentsMargins(0, 0, 0, 0)
         self.addButton.setObjectName("addButton")
         self.actionWidgetLayout.addWidget(self.addButton,alignment=Qt.AlignmentFlag.AlignRight)
+        self.addButton.clicked.connect(self.addItemButtonClick)
+
+        self.addEntry = QLineEdit()
+        self.addEntry.setObjectName("addEntry")
+        self.addEntry.setPlaceholderText("Item name")
+        self.actionWidgetLayout.addWidget(self.addEntry,alignment=Qt.AlignmentFlag.AlignRight)
+        self.addEntry.setContentsMargins(0, 0, 0, 0)
+        self.addEntry.setVisible(False)
+        self.addEntry.returnPressed.connect(self.addEntryEnter)
+        self.addEntry.editingFinished.connect(self.addEntryFocusOut)
 
 
         self.dataTable = QTableWidget()
@@ -141,6 +157,12 @@ class HomePage(QWidget):
             padding:0px;
             width:300px;
         }
+        #searchEntry{
+            width:550px;
+        }
+        #addEntry{
+            width:200px;
+        }
         #addButton{
             width:200px;
         }
@@ -170,40 +192,146 @@ class HomePage(QWidget):
             color:#D3F2FF;
             font-size:24px;
         }
+        QScrollBar:vertical {
+            background: transparent;
+            width: 10px;
+            margin: 4px 0 4px 0;
+        }
+        QScrollBar::handle:vertical {
+            background: #91B1F1;
+            border-radius: 5px;
+            min-height: 20px;
+        }
+        QScrollBar::handle:vertical:hover {
+            background: rgba(120, 120, 120, 0.8);
+        }
+        QScrollBar::handle:vertical:pressed {
+            background: rgba(90, 90, 90, 1);
+        }
+        QScrollBar::add-line:vertical,
+        QScrollBar::sub-line:vertical {
+            height: 0;
+            background: none;
+        }
+        QScrollBar::add-page:vertical,
+        QScrollBar::sub-page:vertical {
+            background: none;
+        }
         #searchButton{width:100px;}
         QPushButton:disabled{background-color:#a6b8dc;}
         QPushButton:hover{background-color:#0B152A;}
         """)
         self.upadteFilters()
-        self.addItem(0)
-        self.addItem(1)
-        self.addItem(2)
-        self.addItem(3)
-        self.addItem(4)
-        self.addItem(5)
-        self.addItem(6)
+        self.refresh_display()
+        # self.database.add_item("3m VGA kábel akasztáshoz")
+    def connectToSaved(self):
+        if not os.path.exists("./creds.json"): raise OSError("No credentials!")
+        try:
+            with open("./creds.json","r") as f:data = json.load(f)
+        except Exception as e:
+            raise e
+        result = check_mysql_connection(host=data.get("address",None),
+                                        port=data.get("port",None),
+                                        user=data.get("user",None),
+                                        password=data.get("password",None),
+                                        database=data.get("database",None)
+                                        )
+        if not result == "Success":
+            raise result
+        self.database = Database(db_host=data.get("address",None),db_port=data.get("port",None),db_user=data.get("user",None),db_password=data.get("password",None),db=data.get("database",None),table=data.get("table",None))
+    
+    def addItemButtonClick(self):
+        if self.addState == False:
+            self.addEntry.setVisible(True)
+            self.addButton.setVisible(False)
+            self.addState = True
 
+    def addEntryEnter(self):
+        self.addEntry.setVisible(False)
+        self.addButton.setVisible(True)
+        self.addState = False
+        if self.addEntry.text() != "":
+            self.database.add_item(self.addEntry.text()) 
+        self.addEntry.clear()
+        self.refresh_display()
 
+    def addEntryFocusOut(self):
+        self.addEntry.setVisible(False)
+        self.addButton.setVisible(True)
+        self.addEntry.clear()
 
-
+    def refresh_display(self):
+        results = self.database.get_items(search_query=None if self.searchEntry.text() == "" else self.searchEntry.text(),filter=None if self.filterState == "all" else self.filterState.upper())
+        self.dataTable.setRowCount(0)
+        for i in results:
+            self.addItem(i[0],i[1],f"{"Lent to" if i[4] == 0 else "Here"} {"" if i[2] is None else str(i[2])+" on "+ i[3].strftime("%Y %m %d")}",i[4])
+        for row in range(self.dataTable.rowCount()):
+            self.dataTable.setRowHeight(row, 80)
 
     def inButtonClick(self):
         if self.filterState in ["all","out"]:self.filterState = "in"
         else: self.filterState="all"
         self.upadteFilters()
+
     def outButtonClick(self):
         if self.filterState in ["all","in"]:self.filterState = "out"
         else: self.filterState="all"
         self.upadteFilters()
 
-    def addItem(self,row):
+    def addItem(self,id,name,status_text, status):
+        row = self.dataTable.rowCount()
         self.dataTable.insertRow(row)
-        self.dataTable.setItem(row, 0, QTableWidgetItem(f"{row}"))
-        self.dataTable.setItem(row, 1, QTableWidgetItem("Lenovo PUNOSZ"))
-        self.dataTable.setItem(row, 2, QTableWidgetItem("Lent to Zétény Botyánszki on 2025.12.01"))
+        self.dataTable.setItem(row, 0, QTableWidgetItem(f"{id}"))
+        self.dataTable.setItem(row, 1, QTableWidgetItem(name))
+        self.dataTable.setItem(row, 2, QTableWidgetItem(status_text))
 
-        for row in range(self.dataTable.rowCount()):
-            self.dataTable.setRowHeight(row, 50)  # increase height for padding feel
+        itemWidget = QWidget()
+        itemWidgetLayout = QHBoxLayout(itemWidget)
+        
+        itemWidgetLayout.addStretch()
+
+        if status:statusChangeButton = QPushButton("Lend")
+        else:statusChangeButton = QPushButton("Got Back")
+
+        statusChangeButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                padding: 5px;
+            }
+        """)
+
+        itemWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
+        
+        editButton = QPushButton("E")
+        editButton.setStyleSheet("""
+            QPushButton{
+                width: 35px;
+                height: 40px;
+                margin:0px;
+            }
+        """)
+        itemWidgetLayout.addWidget(editButton,alignment=Qt.AlignmentFlag.AlignRight)
+        
+        deleteButton = QPushButton("X")
+        deleteButton.clicked.connect(lambda:self.deleteAction(id))
+        deleteButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                width: 35px;
+                margin:0px;
+            }
+        """)
+        itemWidgetLayout.addWidget(deleteButton,alignment=Qt.AlignmentFlag.AlignRight)
+
+
+        self.dataTable.setCellWidget(row, 3, itemWidget)
+
+    def deleteAction(self,dbId):
+        dialog = ConfirmationDialog()
+        if dialog.exec():
+            self.database.delete_item(dbId)
+            self.refresh_display()
+
 
     def upadteFilters(self):
         if self.filterState == "all":
@@ -278,3 +406,47 @@ class HomePage(QWidget):
                     font-size:24px;
                 }
             """)
+        self.refresh_display()
+
+
+class ConfirmationDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Are you sure?")
+        QBtn = (
+            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.Cancel
+        )
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.setStyleSheet("""
+        QDialog{
+            background-color:#030A1E
+        }
+        QLabel{
+            margin:0px;
+            padding:0px;
+            color:#D3F2FF;
+            font-size:20px;
+        }
+        QPushButton{
+            height:40px;
+            margin:5px;
+            padding:5px;
+            background-color:#91B1F1;
+            border-radius: 15px;
+            border: 1px solid #496297;
+            color:#D3F2FF;
+            font-size:24px;
+        }
+        QPushButton:hover{background-color:#0B152A;}
+        """)
+
+        layout = QVBoxLayout()
+        message = QLabel("Are you sure?")
+        layout.addWidget(message)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
