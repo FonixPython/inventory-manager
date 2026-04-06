@@ -27,13 +27,15 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.multipage)
 
         # Page 1
-        self.connectionPage = ConnectionPage()
+        self.connectionPage = ConnectionPage(self.goToApp)
         self.multipage.addWidget(self.connectionPage)
-        
+
+        self.multipage.setCurrentIndex(0)
+
+    def goToApp(self):
         # Page 2
         self.homePage = HomePage()
         self.multipage.addWidget(self.homePage)
-
         self.multipage.setCurrentIndex(1)
 
 

@@ -23,6 +23,15 @@ class Database():
     def add_item(self,name:string):
         self.cursor.execute(f"INSERT INTO {self.table} (name) VALUES (%s)",[name,])
         self.conn.commit()
+    def edit_item(self,id,name):
+        self.cursor.execute(f"UPDATE {self.table} SET name=%s WHERE id = %s",[name,id])
+        self.conn.commit()
+    def got_back(self,id):
+        self.cursor.execute(f"UPDATE {self.table} SET here=TRUE, who=NULL, date = CURRENT_TIMESTAMP WHERE id = %s",[id,])
+        self.conn.commit()
+    def lend(self,id,who):
+        self.cursor.execute(f"UPDATE {self.table} SET here=FALSE, who=%s, date = CURRENT_TIMESTAMP WHERE id = %s",[who,id])
+        self.conn.commit()
     def delete_item(self,id):
         self.cursor.execute(f"DELETE FROM {self.table} WHERE id = %s",[id,])
         self.conn.commit()
@@ -82,3 +91,4 @@ def check_mysql_connection(host, user, password, database, port):
     except mysql.connector.Error as err:return err
     finally:
         if 'connection' in locals() and connection.is_connected():connection.close()
+

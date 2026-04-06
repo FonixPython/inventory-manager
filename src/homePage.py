@@ -21,7 +21,6 @@ class HomePage(QWidget):
         self.filterState = "all"
         self.addState = False
 
-
         self.actionBar = QWidget()
         self.actionBar.setObjectName("actionBar")
         self.layout.addWidget(self.actionBar,alignment=Qt.AlignmentFlag.AlignTop)
@@ -88,6 +87,7 @@ class HomePage(QWidget):
         self.dataTable.setShowGrid(False)
         self.dataTable.setAlternatingRowColors(False)
         self.dataTable.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.dataTable.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.dataTable.setSelectionMode(QAbstractItemView.SelectionMode.NoSelection)
         self.dataTable.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.dataTable.verticalHeader().setVisible(False)
@@ -97,6 +97,9 @@ class HomePage(QWidget):
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         self.dataTable.setColumnWidth(0,40)
+        header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
+        self.dataTable.setColumnWidth(3,250)
+
         self.layout.addWidget(self.dataTable)
 
         self.dataTable.setStyleSheet("""
@@ -291,9 +294,12 @@ class HomePage(QWidget):
         
         itemWidgetLayout.addStretch()
 
-        if status:statusChangeButton = QPushButton("Lend")
-        else:statusChangeButton = QPushButton("Got Back")
-
+        if status:
+            statusChangeButton = QPushButton("Lend")
+            statusChangeButton.clicked.connect(lambda: self.lendAction(id))
+        else:
+            statusChangeButton = QPushButton("Got Back")
+            statusChangeButton.clicked.connect(lambda: self.gotBackAction(id))
         statusChangeButton.setStyleSheet("""
             QPushButton{
                 height: 40px;
@@ -304,6 +310,7 @@ class HomePage(QWidget):
         itemWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
         
         editButton = QPushButton("E")
+        editButton.clicked.connect(lambda:self.editAction(id,name))
         editButton.setStyleSheet("""
             QPushButton{
                 width: 35px;
@@ -331,6 +338,11 @@ class HomePage(QWidget):
         dialog = ConfirmationDialog()
         if dialog.exec():
             self.database.delete_item(dbId)
+            self.refresh_display()
+    
+    def editAction(self,dbId,current):
+        dialog = EditDialog(dbId,current,self.database)
+        if dialog.exec():
             self.refresh_display()
 
     def upadteFilters(self):
@@ -407,7 +419,17 @@ class HomePage(QWidget):
                 }
             """)
         self.refresh_display()
-
+    
+    def gotBackAction(self,dbId):
+        dialog = ConfirmationDialog()
+        if dialog.exec():
+            self.database.got_back(dbId)
+            self.refresh_display()
+    
+    def lendAction(self,dbId):
+        dialog = LendDialog(dbId,self.database)
+        if dialog.exec():
+            self.refresh_display()
 
 class ConfirmationDialog(QDialog):
     def __init__(self):
@@ -450,3 +472,95 @@ class ConfirmationDialog(QDialog):
         layout.addWidget(message)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
+
+class EditDialog(QInputDialog):
+    def __init__(self, itemid,current,database):
+        super().__init__()
+        self.itemid = itemid
+        self.database = database
+        self.setWindowTitle("Edit item name")
+        self.setLabelText("Edit item name")
+        self.setTextValue(current)
+        
+        self.accepted.connect(self.edit)
+
+        self.setStyleSheet("""
+        QInputDialog{
+            background-color: #030A1E;
+        }
+        QLabel{
+            margin:0px;
+            padding:0px;
+            color:#D3F2FF;
+            font-size:20px;
+        }
+        QPushButton{
+            height:40px;
+            margin:5px;
+            padding:5px;
+            background-color:#91B1F1;
+            border-radius: 15px;
+            border: 1px solid #496297;
+            color:#D3F2FF;
+            font-size:24px;
+        }
+        QPushButton:hover{background-color:#0B152A;}
+        QLineEdit{
+            height:40px;
+            width:300px;
+            background-color:#0B152A;
+            border-radius: 15px;
+            border: 1px solid #496297;
+            padding:5px;
+            margin:5px;
+            font-size:20px;
+            color:#D3F2FF;
+        }
+        """)
+    def edit(self):
+        self.database.edit_item(self.itemid,self.textValue())
+
+class LendDialog(QInputDialog):
+    def __init__(self, itemid,database):
+        super().__init__()
+        self.itemid = itemid
+        self.database = database
+        self.setWindowTitle("Lend item")
+        self.setLabelText("Who is the item being lent to?")
+        self.accepted.connect(self.lend)
+
+        self.setStyleSheet("""
+        QInputDialog{
+            background-color: #030A1E;
+        }
+        QLabel{
+            margin:0px;
+            padding:0px;
+            color:#D3F2FF;
+            font-size:20px;
+        }
+        QPushButton{
+            height:40px;
+            margin:5px;
+            padding:5px;
+            background-color:#91B1F1;
+            border-radius: 15px;
+            border: 1px solid #496297;
+            color:#D3F2FF;
+            font-size:24px;
+        }
+        QPushButton:hover{background-color:#0B152A;}
+        QLineEdit{
+            height:40px;
+            width:300px;
+            background-color:#0B152A;
+            border-radius: 15px;
+            border: 1px solid #496297;
+            padding:5px;
+            margin:5px;
+            font-size:20px;
+            color:#D3F2FF;
+        }
+        """)
+    def lend(self):
+        self.database.lend(self.itemid,self.textValue())

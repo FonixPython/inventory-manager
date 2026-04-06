@@ -8,8 +8,10 @@ import os
 import json
 
 class ConnectionPage(QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self,goToHome, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.goToHome = goToHome
+        
         self.layout = QVBoxLayout(self)
         
         self.login_box = QWidget()
@@ -193,3 +195,4 @@ class ConnectionPage(QWidget):
                     "table":self.tableEntry.text(),
                 }
                 json.dump(data, f, indent=4)
+            self.goToHome()
