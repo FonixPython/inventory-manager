@@ -96,6 +96,7 @@ class HomePage(QWidget):
         header = self.dataTable.horizontalHeader()
         header.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
+        self.dataTable.setColumnWidth(0,40)
         self.layout.addWidget(self.dataTable)
 
         self.dataTable.setStyleSheet("""
@@ -331,7 +332,6 @@ class HomePage(QWidget):
         if dialog.exec():
             self.database.delete_item(dbId)
             self.refresh_display()
-
 
     def upadteFilters(self):
         if self.filterState == "all":
