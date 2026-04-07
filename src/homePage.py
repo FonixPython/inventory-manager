@@ -43,6 +43,12 @@ class HomePage(QWidget):
 
         self.searchWidgetLayout.addStretch()
 
+        self.refreshButton = QPushButton(icon=QIcon("assets/refresh.png"))
+        self.refreshButton.clicked.connect(self.refresh_display)
+        self.refreshButton.setIconSize(QSize(35,35))
+        self.refreshButton.setObjectName("refreshButton")
+        self.searchWidgetLayout.addWidget(self.refreshButton, alignment=Qt.AlignmentFlag.AlignRight)
+        
         self.logoutButton = QPushButton(icon=QIcon("assets/logout.png"))
         self.logoutButton.clicked.connect(self.logOutAction)
         self.logoutButton.setIconSize(QSize(35,35))
