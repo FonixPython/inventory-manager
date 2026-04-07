@@ -10,7 +10,12 @@ from db import Database,check_mysql_connection
 import os
 import json
 import datetime
+import sys
 
+def resource_path(relative_path):
+    try:base_path = sys._MEIPASS
+    except AttributeError:base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 class HomePage(QWidget):
     def __init__(self,logoutFunction, *args, **kwargs):
@@ -43,13 +48,13 @@ class HomePage(QWidget):
 
         self.searchWidgetLayout.addStretch()
 
-        self.refreshButton = QPushButton(icon=QIcon("assets/refresh.png"))
+        self.refreshButton = QPushButton(icon=QIcon(resource_path("assets/refresh.png")))
         self.refreshButton.clicked.connect(self.refresh_display)
         self.refreshButton.setIconSize(QSize(35,35))
         self.refreshButton.setObjectName("refreshButton")
         self.searchWidgetLayout.addWidget(self.refreshButton, alignment=Qt.AlignmentFlag.AlignRight)
         
-        self.logoutButton = QPushButton(icon=QIcon("assets/logout.png"))
+        self.logoutButton = QPushButton(icon=QIcon(resource_path("assets/logout.png")))
         self.logoutButton.clicked.connect(self.logOutAction)
         self.logoutButton.setIconSize(QSize(35,35))
         self.logoutButton.setObjectName("logoutButton")
@@ -334,7 +339,7 @@ class HomePage(QWidget):
 
         itemWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
         
-        editButton = QPushButton(icon=QIcon("assets/edit.png"))
+        editButton = QPushButton(icon=QIcon(resource_path("assets/edit.png")))
         editButton.setIconSize(QSize(35,35))
         editButton.clicked.connect(lambda:self.editAction(id,name))
         editButton.setStyleSheet("""
@@ -346,7 +351,7 @@ class HomePage(QWidget):
         """)
         itemWidgetLayout.addWidget(editButton,alignment=Qt.AlignmentFlag.AlignRight)
         
-        deleteButton = QPushButton(icon=QIcon("assets/delete.png"))
+        deleteButton = QPushButton(icon=QIcon(resource_path("assets/delete.png")))
         deleteButton.setIconSize(QSize(35,35))
         deleteButton.clicked.connect(lambda:self.deleteAction(id))
         deleteButton.setStyleSheet("""
