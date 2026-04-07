@@ -37,8 +37,6 @@ class MainWindow(QMainWindow):
         self.homePage = HomePage(self.logOut)
         self.multipage.addWidget(self.homePage)
         self.multipage.setCurrentIndex(1)
-        self.homePage.connectToSaved()
-        self.homePage.refresh_display()
 
     def logOut(self):
         self.homePage = None

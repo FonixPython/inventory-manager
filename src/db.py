@@ -76,7 +76,6 @@ def check_mysql_connection(host, user, password, database, port):
         )
         
         if connection.is_connected():
-            print(f"Successfully connected to MySQL server at {host}")
             cursor = connection.cursor()
             cursor.execute("SHOW DATABASES")
             databases = [db[0] for db in cursor.fetchall()]
