@@ -326,7 +326,7 @@ class HomePage(QWidget):
         statusItem.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
         self.dataTable.setItem(row, 2, statusItem)
 
-        self.dataTable.setCellWidget(row, 3, ItemActionWidget(itemId=i[0],itemStatus=i[4],itemName=i[0],refreshAction=self.refresh_display,databasePointer=self.database))
+        self.dataTable.setCellWidget(row, 3, ItemActionWidget(itemId=i[0],itemStatus=i[4],itemName=i[1],refreshAction=self.refresh_display,databasePointer=self.database))
         
     def upadteFilters(self):
         if self.filterState == "all":
