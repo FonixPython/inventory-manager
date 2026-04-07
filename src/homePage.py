@@ -2,7 +2,7 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow,QLineEdit,
                              QWidget,QLabel, QPushButton,QHBoxLayout,
                              QVBoxLayout, QTableWidget, QTableWidgetItem,
                               QHeaderView, QAbstractItemView, QDialog,
-                              QDialogButtonBox, QInputDialog)
+                              QDialogButtonBox, QInputDialog, QStackedWidget)
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QIntValidator, QFont, QIcon
 
@@ -118,7 +118,7 @@ class HomePage(QWidget):
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         self.dataTable.setColumnWidth(0,40)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        self.dataTable.setColumnWidth(3,250)
+        self.dataTable.setColumnWidth(3,400)
 
         self.layout.addWidget(self.dataTable)
 
@@ -298,7 +298,7 @@ class HomePage(QWidget):
         results = self.database.get_items(search_query=None if self.searchEntry.text() == "" else self.searchEntry.text(),filter=None if self.filterState == "all" else self.filterState.upper())
         self.dataTable.setRowCount(0)
         for i in results:
-            self.addItem(i[0],i[1],f"{"Lent to" if i[4] == 0 else "Here"} {"" if i[2] is None else str(i[2])+" on "+ i[3].strftime("%Y %m %d")}",i[4])
+            self.addItem(i)
         for row in range(self.dataTable.rowCount()):
             self.dataTable.setRowHeight(row, 80)
 
@@ -312,71 +312,22 @@ class HomePage(QWidget):
         else: self.filterState="all"
         self.upadteFilters()
 
-    def addItem(self,id,name,status_text, status):
+    def addItem(self,i):
         row = self.dataTable.rowCount()
+        statusText = f"{"Lent to" if i[4] == 0 else "Here"} {"" if i[2] is None else str(i[2])+" on "+ i[3].strftime("%Y %m %d")}"
         self.dataTable.insertRow(row)
-        self.dataTable.setItem(row, 0, QTableWidgetItem(f"{id}"))
-        self.dataTable.setItem(row, 1, QTableWidgetItem(name))
-        self.dataTable.setItem(row, 2, QTableWidgetItem(status_text))
+        idItem = QTableWidgetItem(f"{i[0]}")
+        idItem.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.dataTable.setItem(row, 0, idItem)
+        nameItem = QTableWidgetItem(i[1])
+        nameItem.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.dataTable.setItem(row, 1, nameItem)
+        statusItem = QTableWidgetItem(statusText)
+        statusItem.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.dataTable.setItem(row, 2, statusItem)
 
-        itemWidget = QWidget()
-        itemWidgetLayout = QHBoxLayout(itemWidget)
+        self.dataTable.setCellWidget(row, 3, ItemActionWidget(itemId=i[0],itemStatus=i[4],itemName=i[0],refreshAction=self.refresh_display,databasePointer=self.database))
         
-        itemWidgetLayout.addStretch()
-
-        if status:
-            statusChangeButton = QPushButton("Lend")
-            statusChangeButton.clicked.connect(lambda: self.lendAction(id))
-        else:
-            statusChangeButton = QPushButton("Got Back")
-            statusChangeButton.clicked.connect(lambda: self.gotBackAction(id))
-        statusChangeButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                padding: 5px;
-            }
-        """)
-
-        itemWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
-        
-        editButton = QPushButton(icon=QIcon(resource_path("assets/edit.png")))
-        editButton.setIconSize(QSize(35,35))
-        editButton.clicked.connect(lambda:self.editAction(id,name))
-        editButton.setStyleSheet("""
-            QPushButton{
-                width: 35px;
-                height: 40px;
-                margin:0px;
-            }
-        """)
-        itemWidgetLayout.addWidget(editButton,alignment=Qt.AlignmentFlag.AlignRight)
-        
-        deleteButton = QPushButton(icon=QIcon(resource_path("assets/delete.png")))
-        deleteButton.setIconSize(QSize(35,35))
-        deleteButton.clicked.connect(lambda:self.deleteAction(id))
-        deleteButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                width: 35px;
-                margin:0px;
-            }
-        """)
-        itemWidgetLayout.addWidget(deleteButton,alignment=Qt.AlignmentFlag.AlignRight)
-
-
-        self.dataTable.setCellWidget(row, 3, itemWidget)
-
-    def deleteAction(self,dbId):
-        dialog = ConfirmationDialog()
-        if dialog.exec():
-            self.database.delete_item(dbId)
-            self.refresh_display()
-    
-    def editAction(self,dbId,current):
-        dialog = EditDialog(dbId,current,self.database)
-        if dialog.exec():
-            self.refresh_display()
-
     def upadteFilters(self):
         if self.filterState == "all":
             self.inButton.setStyleSheet("""
@@ -451,17 +402,6 @@ class HomePage(QWidget):
                 }
             """)
         self.refresh_display()
-    
-    def gotBackAction(self,dbId):
-        dialog = ConfirmationDialog()
-        if dialog.exec():
-            self.database.got_back(dbId)
-            self.refresh_display()
-    
-    def lendAction(self,dbId):
-        dialog = LendDialog(dbId,self.database)
-        if dialog.exec():
-            self.refresh_display()
 
     def logOutAction(self):
         if self.database:
@@ -469,136 +409,168 @@ class HomePage(QWidget):
             self.database = None
         self.logoutFunction()
 
-class ConfirmationDialog(QDialog):
-    def __init__(self):
+class ItemActionWidget(QStackedWidget):
+    def __init__(self,itemId,itemStatus,itemName,refreshAction,databasePointer):
         super().__init__()
+        self.itemId = itemId
+        self.itemStatus = itemStatus
+        self.itemName = itemName
+        self.refreshAction = refreshAction
+        self.databasePointer = databasePointer
 
-        self.setWindowTitle("Are you sure?")
-        QBtn = (
-            QDialogButtonBox.StandardButton.Yes | QDialogButtonBox.StandardButton.Cancel
-        )
+        # Decision widget section
 
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.decisionWidget = QWidget()
+        self.decisionWidgetLayout = QHBoxLayout(self.decisionWidget)
+        self.addWidget(self.decisionWidget)
 
-        self.setStyleSheet("""
-        QDialog{
-            background-color:#030A1E
-        }
-        QLabel{
-            margin:0px;
-            padding:0px;
-            color:#D3F2FF;
-            font-size:20px;
-        }
-        QPushButton{
-            height:40px;
-            margin:5px;
-            padding:5px;
-            background-color:#91B1F1;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            color:#D3F2FF;
-            font-size:24px;
-        }
-        QPushButton:hover{background-color:#0B152A;}
+        self.decisionWidgetYesButton = QPushButton(icon=QIcon(resource_path("assets/check.png")))
+        self.decisionWidgetLayout.addWidget(self.decisionWidgetYesButton)
+        self.decisionWidgetYesButton.setIconSize(QSize(35,35))
+        self.decisionWidgetYesButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                margin:0px;
+            }
         """)
-
-        layout = QVBoxLayout()
-        message = QLabel("Are you sure?")
-        layout.addWidget(message)
-        layout.addWidget(self.buttonBox)
-        self.setLayout(layout)
-
-class EditDialog(QInputDialog):
-    def __init__(self, itemid,current,database):
-        super().__init__()
-        self.itemid = itemid
-        self.database = database
-        self.setWindowTitle("Edit item name")
-        self.setLabelText("Edit item name")
-        self.setTextValue(current)
         
-        self.accepted.connect(self.edit)
-
-        self.setStyleSheet("""
-        QInputDialog{
-            background-color: #030A1E;
-        }
-        QLabel{
-            margin:0px;
-            padding:0px;
-            color:#D3F2FF;
-            font-size:20px;
-        }
-        QPushButton{
-            height:40px;
-            margin:5px;
-            padding:5px;
-            background-color:#91B1F1;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            color:#D3F2FF;
-            font-size:24px;
-        }
-        QPushButton:hover{background-color:#0B152A;}
-        QLineEdit{
-            height:40px;
-            width:300px;
-            background-color:#0B152A;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            padding:5px;
-            margin:5px;
-            font-size:20px;
-            color:#D3F2FF;
-        }
+        self.decisionWidgetCancelButton = QPushButton(icon=QIcon(resource_path("assets/close.png")))
+        self.decisionWidgetLayout.addWidget(self.decisionWidgetCancelButton)
+        self.decisionWidgetCancelButton.setIconSize(QSize(35,35))
+        self.decisionWidgetCancelButton.clicked.connect(self.cancelAction)
+        self.decisionWidgetCancelButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                margin:0px;
+            }
         """)
-    def edit(self):
-        self.database.edit_item(self.itemid,self.textValue())
 
-class LendDialog(QInputDialog):
-    def __init__(self, itemid,database):
-        super().__init__()
-        self.itemid = itemid
-        self.database = database
-        self.setWindowTitle("Lend item")
-        self.setLabelText("Who is the item being lent to?")
-        self.accepted.connect(self.lend)
+        self.addWidget(self.decisionWidget)
 
-        self.setStyleSheet("""
-        QInputDialog{
-            background-color: #030A1E;
-        }
-        QLabel{
-            margin:0px;
-            padding:0px;
-            color:#D3F2FF;
-            font-size:20px;
-        }
-        QPushButton{
-            height:40px;
-            margin:5px;
-            padding:5px;
-            background-color:#91B1F1;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            color:#D3F2FF;
-            font-size:24px;
-        }
-        QPushButton:hover{background-color:#0B152A;}
-        QLineEdit{
-            height:40px;
-            width:300px;
-            background-color:#0B152A;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            padding:5px;
-            margin:5px;
-            font-size:20px;
-            color:#D3F2FF;
-        }
+
+        # Typing widget section
+        self.typingWidget = QWidget()
+        self.typingWidgetLayout = QHBoxLayout(self.typingWidget)
+        
+        self.typingWidgetEntry = QLineEdit()
+        self.typingWidgetLayout.addWidget(self.typingWidgetEntry)
+
+        self.typingWidgetYesButton = QPushButton(icon=QIcon(resource_path("assets/check.png")))
+        self.typingWidgetLayout.addWidget(self.typingWidgetYesButton)
+        self.typingWidgetYesButton.setIconSize(QSize(35,35))
+        self.typingWidgetYesButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                width: 35px;
+                margin:0px;
+            }
         """)
-    def lend(self):
-        self.database.lend(self.itemid,self.textValue())
+        
+        self.typingWidgetCancelButton = QPushButton(icon=QIcon(resource_path("assets/close.png")))
+        self.typingWidgetLayout.addWidget(self.typingWidgetCancelButton)
+        self.typingWidgetCancelButton.setIconSize(QSize(35,35))
+        self.typingWidgetCancelButton.clicked.connect(self.cancelAction)
+        self.typingWidgetCancelButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                width: 35px;
+                margin:0px;
+            }
+        """)
+
+        self.addWidget(self.typingWidget)
+
+
+        # Action choosing widget section
+
+        self.actionWidget = QWidget()
+        self.actionWidgetLayout = QHBoxLayout(self.actionWidget)
+        self.actionWidgetLayout.addStretch()
+
+        if itemStatus:
+            statusChangeButton = QPushButton("Lend")
+            statusChangeButton.clicked.connect(self.enterLendMode)
+        else:
+            statusChangeButton = QPushButton("Got Back")
+            statusChangeButton.clicked.connect(self.enterGotBackMode)
+        statusChangeButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                padding: 5px;
+            }
+        """)
+        
+        self.actionWidgetLayout.addWidget(statusChangeButton,alignment=Qt.AlignmentFlag.AlignRight)
+        
+        self.editButton = QPushButton(icon=QIcon(resource_path("assets/edit.png")))
+        self.editButton.setIconSize(QSize(35,35))
+        self.editButton.clicked.connect(self.enterEditMode)
+        self.editButton.setStyleSheet("""
+            QPushButton{
+                width: 35px;
+                height: 40px;
+                margin:0px;
+            }
+        """)
+        self.actionWidgetLayout.addWidget(self.editButton,alignment=Qt.AlignmentFlag.AlignRight)
+        
+        self.deleteButton = QPushButton(icon=QIcon(resource_path("assets/delete.png")))
+        self.deleteButton.setIconSize(QSize(35,35))
+        self.deleteButton.clicked.connect(self.enterDeleteMode)
+        self.deleteButton.setStyleSheet("""
+            QPushButton{
+                height: 40px;
+                width: 35px;
+                margin:0px;
+            }
+        """)
+        self.actionWidgetLayout.addWidget(self.deleteButton,alignment=Qt.AlignmentFlag.AlignRight)
+        self.addWidget(self.actionWidget)
+        # Default page
+
+        self.setCurrentIndex(2)
+    
+    def enterDeleteMode(self):
+        self.setCurrentIndex(0)
+        self.decisionWidgetYesButton.clicked.connect(self.deleteItem)
+    
+    def deleteItem(self):
+        self.databasePointer.delete_item(self.itemId)
+        self.refreshAction()
+    
+    def enterLendMode(self):
+        self.setCurrentIndex(1)
+        self.typingWidgetEntry.setText("")
+        self.typingWidgetEntry.setPlaceholderText("Who is it being lent to?")
+        self.typingWidgetEntry.setFocus()
+        self.typingWidgetEntry.editingFinished.connect(self.lendItem)
+        self.typingWidgetYesButton.clicked.connect(self.lendItem)
+    
+    def lendItem(self):
+        if self.typingWidgetEntry.text() != "":
+            self.databasePointer.lend(self.itemId,self.typingWidgetEntry.text())
+            self.refreshAction()
+        else: self.cancelAction()
+    def enterEditMode(self):
+        self.setCurrentIndex(1)
+        self.typingWidgetEntry.setPlaceholderText("Type new item name")
+        self.typingWidgetEntry.setText(self.itemName)
+        self.typingWidgetEntry.setFocus()
+        self.typingWidgetEntry.editingFinished.connect(self.saveNewName)
+        self.typingWidgetYesButton.clicked.connect(self.saveNewName)
+
+    def saveNewName(self):
+        if self.typingWidgetEntry.text() != "":
+            self.databasePointer.edit_item(self.itemId,self.typingWidgetEntry.text())
+            self.refreshAction()
+
+    def enterGotBackMode(self):
+        self.setCurrentIndex(0)
+        self.decisionWidgetYesButton.clicked.connect(self.gotBack)
+
+    def gotBack(self):
+        self.databasePointer.got_back(self.itemId)
+        self.refreshAction()
+        
+    def cancelAction(self):
+        self.setCurrentIndex(2)
