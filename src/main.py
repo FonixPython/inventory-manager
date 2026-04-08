@@ -1,4 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QStackedWidget, QSizePolicy,QVBoxLayout
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFontDatabase, QFont
 import sys
 
 # file imports
@@ -9,10 +11,15 @@ from homePage import HomePage
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Inventory manager")
+        self.setWindowTitle("Inventory Manager")
+        self.setMinimumSize(1200, 800)
+        
         self.setStyleSheet("""
             QMainWindow {
-                background-color: #030A1E;
+                background-color: #0d1117;
+            }
+            QWidget {
+                font-family: 'Segoe UI', 'SF Pro Display', -apple-system, sans-serif;
             }
         """)
         central = QWidget()

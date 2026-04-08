@@ -108,9 +108,9 @@ class ConnectionPage(QWidget):
 
         self.setStyleSheet("""
         QWidget#login_box{
-            background-color: #000212;
-            border-radius: 15px;
-            border: 1px solid #496297;
+            background-color: rgba(22, 27, 34, 0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(48, 54, 61, 0.8);
         }
         #hostWidget{
             margin:0px;
@@ -118,47 +118,64 @@ class ConnectionPage(QWidget):
             width:300px;
         }
         QLineEdit{
-            height:40px;
-            width:350px;
-            background-color:#0B152A;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            padding:5px;
-            font-size:20px;
-            color:#D3F2FF;
+            height: 44px;
+            width: 350px;
+            background-color: rgba(13, 17, 23, 0.8);
+            border-radius: 12px;
+            border: 1px solid rgba(48, 54, 61, 0.8);
+            padding: 0 16px;
+            font-size: 15px;
+            color: #f0f6fc;
+            selection-background-color: #58a6ff;
+        }
+        QLineEdit:focus {
+            border: 2px solid #58a6ff;
+            background-color: rgba(13, 17, 23, 1);
+        }
+        QLineEdit::placeholder {
+            color: #8b949e;
         }
         #portEntry{
-            width:65px;
+            width: 80px;
         }
         QLabel{
-            margin:0px;
-            padding:0px;
-            color:#D3F2FF;
-            font-size:20px;
+            margin: 0px;
+            padding: 0px;
+            color: #8b949e;
+            font-size: 14px;
+            font-weight: 500;
         }
         #titleLabel{
-            margin:10px;
+            margin: 10px 0 20px 0;
         }
         QLabel#titleLabel{
-            font-size:36px;
-            font-weight:bold;
+            font-size: 28px;
+            font-weight: 600;
+            color: #f0f6fc;
+            letter-spacing: -0.5px;
         }
         QPushButton{
-            width: 480px;
-            height:50px;
-            margin:10px;
-            background-color:#91B1F1;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            color:#D3F2FF;
-            font-size:24px;
-            
+            width: 460px;
+            height: 48px;
+            margin: 20px 10px 10px 10px;
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                stop:0 #238636, stop:1 #2ea043);
+            border-radius: 12px;
+            border: none;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 600;
         }
         QPushButton:disabled{
-            background-color:#a6b8dc;
+            background: rgba(48, 54, 61, 0.6);
+            color: #8b949e;
         }
-        QPushButton:hover{
-            background-color:#0B152A;
+        QPushButton:hover:!disabled{
+            background: qlineargradient(x1:0, y1:0, x2:1, y2:0, 
+                stop:0 #2ea043, stop:1 #3fb950);
+        }
+        QPushButton:pressed:!disabled{
+            background: #238636;
         }
         """)
         self.fillWithPrevious()
