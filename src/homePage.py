@@ -124,121 +124,152 @@ class HomePage(QWidget):
 
         self.dataTable.setStyleSheet("""
             QTableWidget {
-                background-color: #000212;
-                color: #D3F2FF;
-                gridline-color: #444;
+                background-color: transparent;
+                color: #f0f6fc;
+                gridline-color: transparent;
                 font-size: 14px;
-                border-radius:15px;
+                border: none;
+                outline: none;
             }
-            QTableWidget::item{
-                height:60px;
-                margin-bottom:5px;
-                border-radius:0px;
-                border: 1px solid #496297;
-                background-color:#0B152A;
+            QTableWidget::item {
+                height: 56px;
+                background-color: rgba(22, 27, 34, 0.6);
+                border: 1px solid rgba(48, 54, 61, 0.4);
                 border-left: none;
                 border-right: none;
-                font-size:24px;
+                font-size: 14px;
+                padding: 8px;
+            }
+            QTableWidget::item:selected {
+                background-color: rgba(56, 139, 253, 0.15);
+                border: 1px solid rgba(56, 139, 253, 0.3);
             }
             QTableWidget::item:first {
-                border-left: 1px solid #496297;
-                border-top-left-radius: 15px;
-                border-bottom-left-radius: 15px;
+                border-left: 1px solid rgba(48, 54, 61, 0.4);
+                border-top-left-radius: 10px;
+                border-bottom-left-radius: 10px;
             }
             QTableWidget::item:last {
-                border-right: 1px solid #496297;
-                border-top-right-radius: 15px;
-                border-bottom-right-radius: 15px;
+                border-right: 1px solid rgba(48, 54, 61, 0.4);
+                border-top-right-radius: 10px;
+                border-bottom-right-radius: 10px;
             }
-            QHeaderView::section{
-                background-color: #000212;
-                color: #D3F2FF;
-                padding: 6px;
-                font-size:24px;
-                font-weight: bold;
-                border-radius:15px;
+            QHeaderView::section {
+                background-color: rgba(13, 17, 23, 0.8);
+                color: #8b949e;
+                padding: 12px 8px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border: none;
+                border-bottom: 1px solid rgba(48, 54, 61, 0.6);
             }
-            QHeaderView{
-                background-color: #000212;
-                border-radius:15px;
-                border: 1px solid #496297;
-                margin-bottom:5px;
+            QHeaderView::section:first {
+                border-top-left-radius: 12px;
+            }
+            QHeaderView::section:last {
+                border-top-right-radius: 12px;
+            }
+            QHeaderView {
+                background-color: transparent;
             }
         """)
         
         self.setStyleSheet("""
-        QWidget#actionBar{
-            background-color: #000212;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            padding: 0px
+        QWidget#actionBar {
+            background-color: rgba(22, 27, 34, 0.8);
+            border-radius: 16px;
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            padding: 8px;
         }
-        #page{
-            background-color:#030A1E;
+        #page {
+            background-color: #0d1117;
         }
-        #searchWidget{
-            margin:0px;
-            padding:0px;
-            width:300px;
+        #searchWidget {
+            margin: 0px;
+            padding: 0px;
         }
-        #searchEntry{
-            width:550px;
+        #searchEntry {
+            width: 400px;
         }
-        #addEntry{
-            width:200px;
+        #addEntry {
+            width: 200px;
         }
-        #addButton{
-            width:200px;
+        #addButton {
+            width: 140px;
         }
-        QLineEdit{
-            height:40px;
-            background-color:#0B152A;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            padding:5px;
-            margin:5px;
-            font-size:20px;
-            color:#D3F2FF;
+        QLineEdit {
+            height: 40px;
+            background-color: rgba(13, 17, 23, 0.8);
+            border-radius: 10px;
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            padding: 0 14px;
+            margin: 4px;
+            font-size: 14px;
+            color: #f0f6fc;
         }
-        QLabel{
-            margin:0px;
-            padding:0px;
-            color:#D3F2FF;
-            font-size:20px;
+        QLineEdit:focus {
+            border: 2px solid #58a6ff;
+            background-color: rgba(13, 17, 23, 1);
         }
-        QPushButton{
-            height:40px;
-            margin:5px;
-            padding:5px;
-            background-color:#91B1F1;
-            border-radius: 15px;
-            border: 1px solid #496297;
-            color:#D3F2FF;
-            font-size:24px;
+        QLineEdit::placeholder {
+            color: #6e7681;
         }
-        #logoutButton{
-            width:40px;
-            height:40px;
-            background-color:#0B152A;
+        QLabel {
+            margin: 0px;
+            padding: 0px;
+            color: #8b949e;
+            font-size: 14px;
+            font-weight: 500;
         }
-        #logoutButton:hover{
-            background-color:#030A1E;
+        QPushButton {
+            height: 36px;
+            margin: 4px;
+            padding: 0 16px;
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #21262d, stop:1 #161b22);
+            border-radius: 8px;
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            color: #f0f6fc;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                stop:0 #30363d, stop:1 #21262d);
+            border-color: rgba(139, 148, 158, 0.4);
+        }
+        QPushButton:pressed {
+            background: #161b22;
+        }
+        #logoutButton, #refreshButton {
+            width: 36px;
+            height: 36px;
+            background: transparent;
+            border: 1px solid rgba(48, 54, 61, 0.6);
+            border-radius: 8px;
+            padding: 0;
+        }
+        #logoutButton:hover, #refreshButton:hover {
+            background: rgba(48, 54, 61, 0.4);
+            border-color: rgba(139, 148, 158, 0.6);
         }
         QScrollBar:vertical {
             background: transparent;
-            width: 10px;
+            width: 8px;
             margin: 4px 0 4px 0;
         }
         QScrollBar::handle:vertical {
-            background: #91B1F1;
-            border-radius: 5px;
+            background: rgba(139, 148, 158, 0.4);
+            border-radius: 4px;
             min-height: 20px;
         }
         QScrollBar::handle:vertical:hover {
-            background: rgba(120, 120, 120, 0.8);
+            background: rgba(139, 148, 158, 0.6);
         }
         QScrollBar::handle:vertical:pressed {
-            background: rgba(90, 90, 90, 1);
+            background: rgba(139, 148, 158, 0.8);
         }
         QScrollBar::add-line:vertical,
         QScrollBar::sub-line:vertical {
@@ -249,9 +280,10 @@ class HomePage(QWidget):
         QScrollBar::sub-page:vertical {
             background: none;
         }
-        #searchButton{width:100px;}
-        QPushButton:disabled{background-color:#a6b8dc;}
-        QPushButton:hover{background-color:#0B152A;}
+        QPushButton:disabled {
+            background: rgba(48, 54, 61, 0.3);
+            color: #6e7681;
+        }
         """)
         self.upadteFilters()
         self.refresh_display()
@@ -329,77 +361,92 @@ class HomePage(QWidget):
         self.dataTable.setCellWidget(row, 3, ItemActionWidget(itemId=i[0],itemStatus=i[4],itemName=i[1],refreshAction=self.refresh_display,databasePointer=self.database))
         
     def upadteFilters(self):
+        base_style = """
+            height: 28px;
+            width: 70px;
+            margin: 4px;
+            padding: 0 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        """
+        
         if self.filterState == "all":
-            self.inButton.setStyleSheet("""
-                #inButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #09D71A;
-                    background-color:#2D7316;
-                    border-radius: 15px;
-                    font-size:24px;
-                }""")
-            self.outButton.setStyleSheet("""
-                #outButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #D70909;
-                    background-color:#731616;
-                    border-radius: 15px;
-                    font-size:24px;
-                }
+            self.inButton.setStyleSheet(f"""
+                #inButton{{
+                    {base_style}
+                    border: 1px solid rgba(35, 134, 54, 0.5);
+                    background-color: rgba(35, 134, 54, 0.2);
+                    color: #3fb950;
+                }}
+                #inButton:hover {{
+                    background-color: rgba(35, 134, 54, 0.3);
+                    border-color: rgba(35, 134, 54, 0.7);
+                }}
+            """)
+            self.outButton.setStyleSheet(f"""
+                #outButton{{
+                    {base_style}
+                    border: 1px solid rgba(248, 81, 73, 0.5);
+                    background-color: rgba(248, 81, 73, 0.2);
+                    color: #f85149;
+                }}
+                #outButton:hover {{
+                    background-color: rgba(248, 81, 73, 0.3);
+                    border-color: rgba(248, 81, 73, 0.7);
+                }}
             """)
         if self.filterState == "in":
-            self.inButton.setStyleSheet("""
-                #inButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #09D71A;
-                    background-color:#09D71A;
-                    border-radius: 15px;
-                    font-size:24px;
-                }""")
-            self.outButton.setStyleSheet("""
-                #outButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #D70909;
-                    background-color:#731616;
-                    border-radius: 15px;
-                    font-size:24px;
-                }
+            self.inButton.setStyleSheet(f"""
+                #inButton{{
+                    {base_style}
+                    border: 1px solid #238636;
+                    background-color: #238636;
+                    color: #ffffff;
+                }}
+                #inButton:hover {{
+                    background-color: #2ea043;
+                    border-color: #2ea043;
+                }}
+            """)
+            self.outButton.setStyleSheet(f"""
+                #outButton{{
+                    {base_style}
+                    border: 1px solid rgba(248, 81, 73, 0.5);
+                    background-color: rgba(248, 81, 73, 0.2);
+                    color: #f85149;
+                }}
+                #outButton:hover {{
+                    background-color: rgba(248, 81, 73, 0.3);
+                    border-color: rgba(248, 81, 73, 0.7);
+                }}
             """)
         if self.filterState == "out":
-            self.inButton.setStyleSheet("""
-                #inButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #09D71A;
-                    background-color:#2D7316;
-                    border-radius: 15px;
-                    font-size:24px;
-                }""")
-            self.outButton.setStyleSheet("""
-                #outButton{
-                    height:30px;
-                    width:100px;
-                    margin:5px;
-                    padding:5px;
-                    border: 1px solid #D70909;
-                    background-color:#D70909;
-                    border-radius: 15px;
-                    font-size:24px;
-                }
+            self.inButton.setStyleSheet(f"""
+                #inButton{{
+                    {base_style}
+                    border: 1px solid rgba(35, 134, 54, 0.5);
+                    background-color: rgba(35, 134, 54, 0.2);
+                    color: #3fb950;
+                }}
+                #inButton:hover {{
+                    background-color: rgba(35, 134, 54, 0.3);
+                    border-color: rgba(35, 134, 54, 0.7);
+                }}
+            """)
+            self.outButton.setStyleSheet(f"""
+                #outButton{{
+                    {base_style}
+                    border: 1px solid #da3633;
+                    background-color: #da3633;
+                    color: #ffffff;
+                }}
+                #outButton:hover {{
+                    background-color: #f85149;
+                    border-color: #f85149;
+                }}
             """)
         self.refresh_display()
 
@@ -428,9 +475,17 @@ class ItemActionWidget(QStackedWidget):
         self.decisionWidgetLayout.addWidget(self.decisionWidgetYesButton)
         self.decisionWidgetYesButton.setIconSize(QSize(35,35))
         self.decisionWidgetYesButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                margin:0px;
+            QPushButton {
+                height: 32px;
+                width: 32px;
+                margin: 2px;
+                background-color: rgba(35, 134, 54, 0.2);
+                border: 1px solid rgba(35, 134, 54, 0.5);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(35, 134, 54, 0.3);
+                border-color: rgba(35, 134, 54, 0.7);
             }
         """)
         
@@ -439,9 +494,17 @@ class ItemActionWidget(QStackedWidget):
         self.decisionWidgetCancelButton.setIconSize(QSize(35,35))
         self.decisionWidgetCancelButton.clicked.connect(self.cancelAction)
         self.decisionWidgetCancelButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                margin:0px;
+            QPushButton {
+                height: 32px;
+                width: 32px;
+                margin: 2px;
+                background-color: rgba(248, 81, 73, 0.2);
+                border: 1px solid rgba(248, 81, 73, 0.5);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(248, 81, 73, 0.3);
+                border-color: rgba(248, 81, 73, 0.7);
             }
         """)
 
@@ -459,10 +522,17 @@ class ItemActionWidget(QStackedWidget):
         self.typingWidgetLayout.addWidget(self.typingWidgetYesButton)
         self.typingWidgetYesButton.setIconSize(QSize(35,35))
         self.typingWidgetYesButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                width: 35px;
-                margin:0px;
+            QPushButton {
+                height: 32px;
+                width: 32px;
+                margin: 2px;
+                background-color: rgba(35, 134, 54, 0.2);
+                border: 1px solid rgba(35, 134, 54, 0.5);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(35, 134, 54, 0.3);
+                border-color: rgba(35, 134, 54, 0.7);
             }
         """)
         
@@ -471,10 +541,17 @@ class ItemActionWidget(QStackedWidget):
         self.typingWidgetCancelButton.setIconSize(QSize(35,35))
         self.typingWidgetCancelButton.clicked.connect(self.cancelAction)
         self.typingWidgetCancelButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                width: 35px;
-                margin:0px;
+            QPushButton {
+                height: 32px;
+                width: 32px;
+                margin: 2px;
+                background-color: rgba(248, 81, 73, 0.2);
+                border: 1px solid rgba(248, 81, 73, 0.5);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(248, 81, 73, 0.3);
+                border-color: rgba(248, 81, 73, 0.7);
             }
         """)
 
@@ -494,9 +571,20 @@ class ItemActionWidget(QStackedWidget):
             statusChangeButton = QPushButton("Got Back")
             statusChangeButton.clicked.connect(self.enterGotBackMode)
         statusChangeButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                padding: 5px;
+            QPushButton {
+                height: 32px;
+                padding: 0 16px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #1f6feb, stop:1 #1158c7);
+                border: none;
+                border-radius: 6px;
+                color: #ffffff;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #388bfd, stop:1 #1f6feb);
             }
         """)
         
@@ -506,10 +594,17 @@ class ItemActionWidget(QStackedWidget):
         self.editButton.setIconSize(QSize(35,35))
         self.editButton.clicked.connect(self.enterEditMode)
         self.editButton.setStyleSheet("""
-            QPushButton{
-                width: 35px;
-                height: 40px;
-                margin:0px;
+            QPushButton {
+                width: 32px;
+                height: 32px;
+                margin: 2px;
+                background-color: rgba(139, 148, 158, 0.15);
+                border: 1px solid rgba(139, 148, 158, 0.3);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(139, 148, 158, 0.25);
+                border-color: rgba(139, 148, 158, 0.5);
             }
         """)
         self.actionWidgetLayout.addWidget(self.editButton,alignment=Qt.AlignmentFlag.AlignRight)
@@ -518,10 +613,17 @@ class ItemActionWidget(QStackedWidget):
         self.deleteButton.setIconSize(QSize(35,35))
         self.deleteButton.clicked.connect(self.enterDeleteMode)
         self.deleteButton.setStyleSheet("""
-            QPushButton{
-                height: 40px;
-                width: 35px;
-                margin:0px;
+            QPushButton {
+                width: 32px;
+                height: 32px;
+                margin: 2px;
+                background-color: rgba(248, 81, 73, 0.15);
+                border: 1px solid rgba(248, 81, 73, 0.3);
+                border-radius: 6px;
+            }
+            QPushButton:hover {
+                background-color: rgba(248, 81, 73, 0.25);
+                border-color: rgba(248, 81, 73, 0.5);
             }
         """)
         self.actionWidgetLayout.addWidget(self.deleteButton,alignment=Qt.AlignmentFlag.AlignRight)
