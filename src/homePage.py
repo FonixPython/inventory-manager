@@ -471,6 +471,17 @@ class ItemActionWidget(QStackedWidget):
         self.decisionWidgetLayout = QHBoxLayout(self.decisionWidget)
         self.addWidget(self.decisionWidget)
 
+        self.decisionWidgetLayout.addStretch()
+        self.decisionWidgetLayout.addWidget(QLabel("Are you sure?"))
+
+        self.decisionWidget.setStyleSheet("""
+        QLabel{
+            margin:0px;
+            padding:0px;
+            color:#D3F2FF;
+            font-size:20px;
+        }""")
+
         self.decisionWidgetYesButton = QPushButton(icon=QIcon(resource_path("assets/check.png")))
         self.decisionWidgetLayout.addWidget(self.decisionWidgetYesButton)
         self.decisionWidgetYesButton.setIconSize(QSize(35,35))
